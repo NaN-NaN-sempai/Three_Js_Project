@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; } 
+		</style>
+	</head>
+	<body>
+	</body>
+    <script src="build/three.js"></script> 
+    <script src="examples/js/controls/PointerLockControls.js"></script>
+    
+    <script type="module" src="scripts/operations.js"></script>
+    <script type="module" src="scripts/inputManager.js"></script>
+    <script type="module" src="scripts/controls.js"></script> 
+
+<script type="module">
+import operations from "/scripts/operations.js";
+import  {inputManger, input, inputManagerUpdate} from "/scripts/inputManager.js";
+import  {controlsFunctions as controls} from "/scripts/controls.js";
+import { FBXLoader } from '/examples/jsm/loaders/FBXLoader.js'; 
+var tjs = THREE;
+
+async function init(){
+const scene = new THREE.Scene();
+
+const renderer = new THREE.WebGLRenderer({alpha: true});
+renderer.setSize( window.innerWidth, window.innerHeight ); 
+document.body.appendChild( renderer.domElement );
+ 
+
+const light = new THREE.AmbientLight( 0xffffff );
+light.intensity = 10 
+light.position.y = 10;
+scene.add( light );
+
+var clock = new tjs.Clock();
+
+ 
+
+
+const loader = new FBXLoader();
+            
+var mixer;
+var model;
+await loader.loadAsync("models/main/main.fbx").then((e)=>{
+    mixer = new THREE.AnimationMixer(e); 
+    model = e;
+    scene.add(e);
+    e.scale.setScalar(.015);   
+    var action = mixer.clipAction(e.animations[0]);
+    action.play();  
+    action.setEffectiveTimeScale(1);
+    action.setEffectiveWeight(1);
+
+}).catch((err)=>{throw err})
+
+
+var camera = new operations.orbitalCamera(model, new tjs.Vector3(0,2,5), false, scene);
+
+
+
+function animate() {
+	requestAnimationFrame( animate );
+    mixer.update(clock.getDelta());
+    
+    renderer.render( scene, camera.camera );
+}
+animate();}
+init()
+</script>
+</html>

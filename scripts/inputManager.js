@@ -3,8 +3,8 @@ var inputManger;
 
 function inputManagerUpdate () {
     inputManger = {
-        horizontal: input.linear(controlsFunctions.simpleGetKey("d"), controlsFunctions.simpleGetKey("a")),
-        vertical: input.linear(controlsFunctions.simpleGetKey("w"), controlsFunctions.simpleGetKey("s")),
+        horizontal: input.linear(controlsFunctions.simpleGetKey("a"), controlsFunctions.simpleGetKey("d")),
+        vertical: input.linear(controlsFunctions.simpleGetKey("s"), controlsFunctions.simpleGetKey("w")),
 
         camera: {
             horizontal: controlsFunctions.getMouseAxis("horizontal"),
