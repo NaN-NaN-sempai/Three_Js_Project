@@ -112,7 +112,7 @@ var operations = {
                     this.model = e;
                     this.scene.add(e);
                 }
-                e.scale.setScalar(scalar);  
+                e.scale.setScalar(typeof scalar == "number"? scalar: 1);  
                 this.animations.push(new operations.animation(name, e.animations[0], this.mixer));
 
                 this.animations.forEach(e => {
@@ -126,6 +126,85 @@ var operations = {
 
         getAnimationByName(name){
             return this.animations.find(e => e.name == name)
+        }
+    },
+    animationPlane: class{
+        constructor(model){
+            this.model = model;
+            this.animations = [];
+            this.x = 0;
+            this.y = 0;
+            this.bigger = {x: 0, y: 0}
+            this.lesser = {x: 0, y: 0}
+        }
+        addAnimation(animation, point){
+            var lx = typeof point.x == "number"? point.x: 0;
+            var ly = typeof point.y == "number"? point.y: 0;
+            this.bigger.x = lx > this.bigger.x? lx: this.bigger.x;
+            this.bigger.y = ly > this.bigger.y? ly: this.bigger.y;
+            this.lesser.x = lx < this.lesser.x? lx: this.lesser.x;
+            this.lesser.y = ly < this.lesser.y? ly: this.lesser.y; 
+    
+            this.animations.push({animation: animation, x: lx, y: ly})
+        }
+        setVertical(n){
+            this.y = n;
+            this.updateAnimation();
+        }
+        setHorizontal(n){
+            this.x = n;
+            this.updateAnimation();
+        }
+        updateAnimation(){
+            this.animations.forEach(e => {
+                var yto0 = this.bigger.y + Math.abs(this.lesser.y);
+                var distY = (e.y == 0? (this.y > 0? this.bigger.y:
+                                        this.y < 0? Math.abs(this.lesser.y):
+                                        yto0/2) - Math.abs(this.y):
+                            (e.y < 0? Math.abs(this.y): this.y))
+          
+                var xto0 = this.bigger.x + Math.abs(this.lesser.x);
+                var distX = (e.x == 0? (this.x > 0? this.bigger.x:
+                                        this.x < 0? Math.abs(this.lesser.x):
+                                        xto0/2) - Math.abs(this.x):
+                            (e.x < 0? Math.abs(this.x): this.x))
+                              
+    
+                var multiy = (e.y > 0 && this.y > 0? 1:
+                            e.y < 0 && this.y < 0? 1: 
+                            e.y == 0 && e.x == 0? (yto0/2) - Math.abs(this.y): 0);
+    
+                var multix = (e.x > 0 && this.x > 0? 1:
+                            e.x < 0 && this.x < 0? 1: 
+                            e.x == 0 && e.y == 0? (xto0/2) - Math.abs(this.x): 0);
+    
+                if(e.y != 0 || e.x != 0) { 
+                    var auxval = (distY * multiy) + (distX * multix);
+                    //console.log(auxval);
+                    e.animation.setWeight(auxval);
+                }
+
+                /* 
+                criar xbef e xaft
+                this.animation.find animation.x > e.x = proxima animação (xaft)
+                this.animation.find animation.x < e.x = animação anteirior (xbef)
+                comparar com this x e pegar a distancia do ponto this x para xbet e xaft
+
+                o resultado dessa conta sera um numero de 0 a 1 pra ser inserido em setWeight()
+                */
+
+
+                /* if(e.y != 0) {
+                    e.animation.setWeight(distY * multiy);
+                }
+                if(e.x != 0) {
+                    e.animation.setWeight(distX * multix);
+                } */
+                if(e.y == 0 && e.x == 0){
+                    e.animation.setWeight((distY * multiy) + (distX * multix) - Math.abs(this.x) - Math.abs(this.y))
+                }
+    
+            }); 
         }
     }
 }

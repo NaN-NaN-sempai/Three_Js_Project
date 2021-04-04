@@ -73,51 +73,30 @@ var cameraDistanceFull = 5;
 
 
 var player = new operations.animationModel(scene)
-await player.addAnimation("main", "models/main/main.fbx", .015);
-await player.addAnimation("iddle", "models/main/main.fbx", .015);
-await player.addAnimation("walk", "models/main/walk.fbx", .015);
-await player.addAnimation("walkBackward", "models/main/walkBackward.fbx", .015);
+var modelSise = .015;
+await player.addAnimation("main", "models/main/main.fbx", modelSise);
+await player.addAnimation("iddle", "models/main/main.fbx");
+await player.addAnimation("walk", "models/main/walk.fbx");
+await player.addAnimation("walkBackward", "models/main/walkBackward.fbx");
+await player.addAnimation("walkRight", "models/main/walkRight.fbx");
+await player.addAnimation("walkLeft", "models/main/walkLeft.fbx");
+await player.addAnimation("tet1", "models/main/tet1.fbx");
+await player.addAnimation("tet2", "models/main/tet2.fbx");
+
+player.animationPlane = new operations.animationPlane(player);
+player.animationPlane.addAnimation(player.getAnimationByName("iddle"), {x: 0, y: 0})
+player.animationPlane.addAnimation(player.getAnimationByName("walk"), {x: 0, y: 1})
+player.animationPlane.addAnimation(player.getAnimationByName("walkBackward"), {x: 0, y: -1})
+player.animationPlane.addAnimation(player.getAnimationByName("walkRight"), {x: 1, y: 0})
+player.animationPlane.addAnimation(player.getAnimationByName("walkLeft"), {x: -1, y: 0}) 
+//player.animationPlane.addAnimation(player.getAnimationByName("tet1"), {x: -1, y: -1}) 
+
+
+console.clear()
 
 window.p = player
 
 
-class animationPlane{
-    constructor(model){
-        this.model = model;
-        this.animations = [];
-        this.x = 0;
-        this.y = 0;
-    }
-    addAnimation(animation, point){
-        this.animations.push({animation: animation, x: point.x, y: point.y})
-    }
-    setVertical(n){
-        this.y = n;
-        this.updateAnimation();
-    }
-    updateAnimation(){
-        this.animations.forEach(e => {
-            if(e.y > 0) { 
-                var en = e.y;
-                var thisn = this.y; 
-                var porcentage = (thisn) / en; 
-                e.animation.setWeight(porcentage > 1? 1: porcentage);
-            } else if(this.y < 0){
-                var en = Math.abs(e.y);
-                var thisn = Math.abs(this.y); 
-                var porcentage = (thisn) / en; 
-                e.animation.setWeight(porcentage > 1? 1: porcentage);
-            } else {
-                e.animation.setWeight(0);
-            }
-        }); 
-    }
-}
-
-var an = new animationPlane(player);
-an.addAnimation(player.getAnimationByName("iddle"), {x: 0, y: 0})
-an.addAnimation(player.getAnimationByName("walk"), {x: 0, y: 1})
-an.addAnimation(player.getAnimationByName("walkBackward"), {x: 0, y: -1})
 
 
 
@@ -126,15 +105,17 @@ function animate() {
 	requestAnimationFrame( animate );
     inputManagerUpdate(); 
 
+
     player.mixer.update(clock.getDelta());
-    
-    an.setVertical(inputManger.vertical)
 
     movec.x = inputManger.camera.horizontal;  //operations.lerp(movec.x, inputManger.camera.horizontal, cameraLerpAmount);
     movec.y = inputManger.camera.vertical;    //operations.lerp(movec.y, inputManger.camera.vertical, cameraLerpAmount);
     var endMovexc = movec.x * cameraMoveSpeed / 700;
     var endMoveyc = movec.y * cameraMoveSpeed / 500; 
  
+
+    
+     
 
     camera.y.rotation.x =  camera.y.rotation.x + endMovexc < crmax.x? crmax.x:
                            camera.y.rotation.x + endMovexc > crmax.y? crmax.y:
@@ -153,18 +134,22 @@ function animate() {
     move.y = operations.lerp(move.y, inputManger.horizontal, moveLerp);
     var movex = move.x * moveSpeed;
     var movey = move.y * moveSpeed;
- /* 
     
-    player.getAnimationByName("walk").setWeight(Math.abs(move.x))
-    player.getAnimationByName("walkRight").setWeight(Math.abs(move.y))  */
+    player.animationPlane.setVertical(move.x)
+    player.animationPlane.setHorizontal(move.y)
 
 
     var toVertical = cube.forward(movex);
     toVertical.y = 0;
     var toHorizontal = cube.right(movey); 
  
+    camera.lookToTarget(new tjs.Vector3(0,.3))
+    var cameraPosAux = cube.position.clone().add(camera.forward())
+        cameraPosAux.y = cube.position.y;
 
-    var lmt = 0.1;   
+    cube.lookAt(cameraPosAux);
+
+    var lmt = 0.1;   /* 
     if(!(move.y > -lmt && move.y < lmt) || !(move.x > -lmt && move.x < lmt)){
         var cameraPosAux = cube.position.clone().add(camera.forward())
             cameraPosAux.y = cube.position.y;
@@ -174,7 +159,7 @@ function animate() {
     } else {
         camera.lookToTarget(new tjs.Vector3(0,.3))
     }
-    
+     */
     camera.x.position.copy(cube.position.clone())
 
 

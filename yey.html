@@ -45,6 +45,7 @@ const loader = new FBXLoader();
             
 var mixer;
 var model;
+//examples/models/fbx/Samba Dancing.fbx
 await loader.loadAsync("models/main/main.fbx").then((e)=>{
     mixer = new THREE.AnimationMixer(e); 
     model = e;
